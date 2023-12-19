@@ -2,7 +2,6 @@ package com.example.gulsumbi;
 
 import static android.widget.Toast.makeText;
 
-import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -10,52 +9,43 @@ import android.app.Service;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.media.PlaybackParams;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.IBinder;;
+import android.os.IBinder;
 import android.view.KeyEvent;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
-import androidx.core.content.ContextCompat;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.util.HashMap;
 
-import edu.cmu.pocketsphinx.*;
+import edu.cmu.pocketsphinx.Assets;
+import edu.cmu.pocketsphinx.Hypothesis;
+import edu.cmu.pocketsphinx.RecognitionListener;
+import edu.cmu.pocketsphinx.SpeechRecognizer;
+import edu.cmu.pocketsphinx.SpeechRecognizerSetup;
+
+;
 
 public class RecordingService extends Service implements RecognitionListener
 {
 
     private static final String KWS_SEARCH = "wakeup";
-    private static final String FORECAST_SEARCH = "forecast";
-    private static final String DIGITS_SEARCH = "digits";
     private static final String KEYWORD_SEARCH = "keywords";
     private static final String PHONE_SEARCH = "phones";
-    private static final String MENU_SEARCH = "menu";
-
     /* Keyword we are looking for to activate menu */
     private static final String KEYPHRASE = "GULSUMBI";
-
-    private static final String EXITPHRASE = "exit";
 
     /* Used to handle permission request */
 
     private SpeechRecognizer recognizer;
-    private HashMap<String, Integer> captions;
-
     Notification notification;
     NotificationManager notificationManager;
 
@@ -178,8 +168,6 @@ public class RecordingService extends Service implements RecognitionListener
         String text = hypothesis.getHypstr();
         makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
 
-//        String text = hypothesis.getHypstr();
-
         System.out.println(text);
 
         text = text.trim();
@@ -215,12 +203,8 @@ public class RecordingService extends Service implements RecognitionListener
 
             switchSearch(KEYWORD_SEARCH);
         }
-        else if (text.equals(DIGITS_SEARCH))
-            switchSearch(DIGITS_SEARCH);
         else if (text.equals(PHONE_SEARCH))
             switchSearch(PHONE_SEARCH);
-        else if (text.equals(FORECAST_SEARCH))
-            switchSearch(FORECAST_SEARCH);
         else if (text.equals("PATTU VECHE"))
         {
             switchSearch(KWS_SEARCH);
@@ -235,23 +219,18 @@ public class RecordingService extends Service implements RecognitionListener
             switchSearch(KWS_SEARCH);
             sendMediaButton(getApplicationContext(), KeyEvent.KEYCODE_MEDIA_PREVIOUS);
         }
-        else {
+        else
+        {
             switchSearch(KWS_SEARCH);
-            //((TextView) findViewById(R.id.result_text)).setText(text);
         }
-
-
-        //else if (text.equals(EXITPHRASE))
-        //this.finishAffinity();
     }
 
     /**
      * This callback is called when we stop the recognizer.
      */
     @Override
-    public void onResult(Hypothesis hypothesis) {
-        //((TextView) findViewById(R.id.result_text)).setText("");
-
+    public void onResult(Hypothesis hypothesis)
+    {
         if (hypothesis == null)
         {
             return;
@@ -259,7 +238,9 @@ public class RecordingService extends Service implements RecognitionListener
     }
 
     @Override
-    public void onBeginningOfSpeech() {
+    public void onBeginningOfSpeech()
+    {
+
     }
 
     /**
@@ -271,7 +252,8 @@ public class RecordingService extends Service implements RecognitionListener
             switchSearch(KWS_SEARCH);
     }
 
-    private void switchSearch(String searchName) {
+    private void switchSearch(String searchName)
+    {
         recognizer.stop();
 
         // If we are not spotting, start listening with timeout (10000 ms or 10 seconds).
@@ -279,9 +261,6 @@ public class RecordingService extends Service implements RecognitionListener
             recognizer.startListening(searchName);
         else
             recognizer.startListening(searchName, 5000);
-
-        //String caption = getResources().getString(captions.get(KWS_SEARCH));
-        //((TextView) findViewById(R.id.caption_text)).setText(caption);
     }
 
     private void setupRecognizer(File assetsDir) throws IOException {
@@ -302,28 +281,8 @@ public class RecordingService extends Service implements RecognitionListener
           They are added here for demonstration. You can leave just one.
          */
 
-        // Create keyword-activation search.
-        recognizer.addKeyphraseSearch(KWS_SEARCH, KEYPHRASE);
-//        recognizer.addKeyphraseSearch(KWS_SEARCH, EXITPHRASE);
-
-        // Create grammar-based search for selection between demos
-        File menuGrammar = new File(assetsDir, "menu.gram");
-        //recognizer.addGrammarSearch(MENU_SEARCH, menuGrammar);
-
-        File keywordsGrammar = new File(assetsDir, "an4.gram");
+        File keywordsGrammar = new File(assetsDir, "keywords.gram");
         recognizer.addKeywordSearch(KEYWORD_SEARCH, keywordsGrammar);
-
-        // Create grammar-based search for digit recognition
-        File digitsGrammar = new File(assetsDir, "digits.gram");
-        //recognizer.addGrammarSearch(DIGITS_SEARCH, digitsGrammar);
-
-        // Create language model search
-        File languageModel = new File(assetsDir, "weather.dmp");
-        //recognizer.addNgramSearch(FORECAST_SEARCH, languageModel);
-
-        // Phonetic search
-        File phoneticModel = new File(assetsDir, "en-phone.dmp");
-        //recognizer.addAllphoneSearch(PHONE_SEARCH, phoneticModel);
     }
 
     @Override
