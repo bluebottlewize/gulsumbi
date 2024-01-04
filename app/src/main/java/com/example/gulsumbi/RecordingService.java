@@ -215,7 +215,15 @@ public class RecordingService extends Service implements RecognitionListener
         } else if (text.equals("ADUTHA PATTU")) {
             switchSearch(KWS_SEARCH);
             sendMediaButton(getApplicationContext(), KeyEvent.KEYCODE_MEDIA_NEXT);
-        } else if (text.equals("previous")) {
+        } 
+        else if (text.equals("ITHETHA PATTU"))
+        {
+            switchSearch(KWS_SEARCH);
+            Intent intent = new Intent(RecordingService.this, SongRecognizerActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        }
+        else if (text.equals("previous")) {
             switchSearch(KWS_SEARCH);
             sendMediaButton(getApplicationContext(), KeyEvent.KEYCODE_MEDIA_PREVIOUS);
         }
@@ -280,6 +288,9 @@ public class RecordingService extends Service implements RecognitionListener
         /* In your application you might not need to add all those searches.
           They are added here for demonstration. You can leave just one.
          */
+
+        // Create keyword-activation search.
+        recognizer.addKeyphraseSearch(KWS_SEARCH, KEYPHRASE);
 
         File keywordsGrammar = new File(assetsDir, "keywords.gram");
         recognizer.addKeywordSearch(KEYWORD_SEARCH, keywordsGrammar);
